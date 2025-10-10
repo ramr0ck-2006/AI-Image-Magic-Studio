@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>AI Image Magic Studio</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #333;
+            min-height: 100vh;
+            position: relative;
+            overflow-x: hidden;
+        }
+        /* Background Video */
+        
+        #background-video {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            z-index: -2;
+            opacity: 0.3;
+            filter: brightness(0.7) contrast(1.2);
+        }
+        /* Animated Gradient Overlay */
+        
+        .gradient-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(45deg, rgba(102, 126, 234, 0.8) 0%, rgba(118, 75, 162, 0.7) 25%, rgba(255, 138, 0, 0.6) 50%, rgba(255, 0, 128, 0.7) 75%, rgba(0, 255, 255, 0.8) 100%);
+            background-size: 400% 400%;
+            animation: gradientShift 15s ease infinite;
+            z-index: -1;
+            opacity: 0.6;
+        }
+        
+        @keyframes gradientShift {
+            0% {
+                background-position: 0% 50%;
+            }
+            50% {
+                background-position: 100% 50%;
+            }
+            100% {
+                background-position: 0% 50%;
+            }
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 30px;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .header h1 {
+            font-size: 3.5em;
+            background: linear-gradient(135deg, #667eea, #764ba2, #ff8a00);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+        
+        .header p {
+            font-size: 1.2em;
+            color: #666;
+            margin-bottom: 20px;
+        }
+        
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            margin-bottom: 40px;
+        }
+        
+        @media (max-width: 1024px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .form-section,
+        .preview-section {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .form-group {
+            margin-bottom: 25px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+            font-size: 1.1em;
+        }
+        
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e1e5e9;
+            border-radius: 12px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            background: rgba(255, 255, 255, 0.9);
+        }
+        
+        .form-group input:focus,
+        .form-group textarea:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+            background: white;
+        }
+        
+        .file-input-wrapper {
+            position: relative;
+            overflow: hidden;
+            display: inline-block;
+            width: 100%;
+        }
+        
+        .file-input-wrapper input[type="file"] {
+            position: absolute;
+            left: 0;
+            top: 0;
+            opacity: 0;
+            width: 100%;
+            height: 100%;
+            cursor: pointer;
+        }
+        
+        .file-input-style {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            border: 2px dashed #667eea;
+            border-radius: 12px;
+            background: rgba(102, 126, 234, 0.05);
+            transition: all 0.3s ease;
+            color: #667eea;
+            font-weight: 500;
+        }
+        
+        .file-input-style:hover {
+            background: rgba(102, 126, 234, 0.1);
+            border-color: #764ba2;
+        }
+        
+        .file-name {
+            margin-top: 10px;
+            font-size: 14px;
+            color: #333;
+            background: rgba(0, 0, 0, 0.1);
+            padding: 8px 12px;
+            border-radius: 8px;
+            display: inline-block;
+        }
+        
+        .params-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        
+        @media (max-width: 768px) {
+            .params-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .btn-group {
+            display: flex;
+            gap: 15px;
+            margin-top: 30px;
+        }
+        
+        .btn {
+            flex: 1;
+            padding: 18px 30px;
+            border: none;
+            border-radius: 12px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+        }
+        
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.9);
+            color: #333;
+            border: 2px solid #e1e5e9;
+        }
+        
+        .preview-section {
+            text-align: center;
+        }
+        
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 40px;
+        }
+        
+        .loading-spinner {
+            width: 60px;
+            height: 60px;
+            border: 6px solid #f3f3f3;
+            border-top: 6px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+        
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+        
+        .results-section {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            margin-top: 40px;
+        }
+        
+        .image-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin-top: 30px;
+        }
+        
+        .image-card {
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+        
+        .image-card img {
+            width: 100%;
+            height: 300px;
+            object-fit: cover;
+        }
+    </style>
+</head>
+
+<body>
+    <video id="background-video" autoplay muted loop playsinline>
+        <source src="https://assets.mixkit.co/videos/preview/mixkit-abstract-background-with-moving-lines-117-large.mp4" type="video/mp4">
+    </video>
+    <div class="gradient-overlay"></div>
+
+    <div class="container">
+        <div class="header">
+            <h1>🎨 AI Image Magic Studio</h1>
+            <p>Transform your images with the power of Artificial Intelligence</p>
+        </div>
+
+        <div class="main-content">
+            <div class="form-section">
+                <h2>Create Your Masterpiece</h2>
+                <form id="generateForm">
+                    <div class="form-group">
+                        <label>📸 Upload Image</label>
+                        <div class="file-input-wrapper">
+                            <div class="file-input-style">
+                                <span>📁 Click to upload image</span>
+                                <input type="file" id="image" name="image" accept="image/*" required>
+                            </div>
+                        </div>
+                        <div id="fileName" class="file-name">No file chosen</div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>✨ Creative Prompt</label>
+                        <textarea id="prompt" rows="3">a fantasy landscape with castles and waterfalls, highly detailed, digital art</textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label>🚫 Negative Prompt</label>
+                        <textarea id="negative_prompt" rows="2">blurry, low quality, distorted, bad anatomy</textarea>
+                    </div>
+
+                    <div class="params-grid">
+                        <div class="form-group">
+                            <label>🎛️ Strength</label>
+                            <input type="number" id="strength" value="0.75" step="0.1" min="0.1" max="0.9">
+                        </div>
+                        <div class="form-group">
+                            <label>🎯 Guidance</label>
+                            <input type="number" id="guidance_scale" value="7.5" step="0.5" min="1" max="20">
+                        </div>
+                        <div class="form-group">
+                            <label>🖼️ Number of Images</label>
+                            <input type="number" id="num_images" value="2" min="1" max="4">
+                        </div>
+                        <div class="form-group">
+                            <label>⚡ Steps</label>
+                            <input type="number" id="steps" value="30" min="10" max="100">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>🌱 Seed (Optional)</label>
+                        <input type="number" id="seed" placeholder="Leave empty for random results">
+                    </div>
+
+                    <div class="btn-group">
+                        <button type="submit" class="btn btn-primary">🚀 Generate Magic</button>
+                        <button type="button" class="btn btn-secondary" onclick="clearResults()">🗑️ Clear All</button>
+                    </div>
+                </form>
+            </div>
+
+            <div class="preview-section">
+                <h2>Live Preview</h2>
+                <div id="preview-area" style="padding:40px;background:rgba(0,0,0,0.05);border-radius:12px;">
+                    <p>Your generated images will appear here</p>
+                </div>
+                <div id="loading" class="loading">
+                    <div class="loading-spinner"></div>
+                    <h3>✨ Creating Your Masterpiece</h3>
+                    <p>AI is working its magic... (Frontend Demo)</p>
+                </div>
+            </div>
+        </div>
+
+        <div id="results" class="results-section" style="display:none;">
+            <!-- Results will appear here -->
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('image').addEventListener('change', function() {
+            const fileName = this.files[0] ? .name || 'No file chosen';
+            document.getElementById('fileName').textContent = fileName;
+        });
+
+        document.getElementById('generateForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('preview-area').style.display = 'none';
+            setTimeout(() => {
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('preview-area').innerHTML = '<h3>✅ Demo complete — this is the frontend only.</h3><p>Backend AI generation not connected.</p>';
+                document.getElementById('preview-area').style.display = 'block';
+            }, 2000);
+        });
+
+        function clearResults() {
+            document.getElementById('results').style.display = 'none';
+            document.getElementById('image').value = '';
+            document.getElementById('fileName').textContent = 'No file chosen';
+            document.getElementById('preview-area').innerHTML = '<p>Your generated images will appear here</p>';
+        }
+    </script>
+</body>
+
+</html>
