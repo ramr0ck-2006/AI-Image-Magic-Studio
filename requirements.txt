@@ -1,0 +1,10 @@
+diffusers
+transformers
+accelerate
+torch
+xformers
+flask
+pillow
+matplotlib
+flask-cors
+pyngrok
